@@ -5,9 +5,15 @@ Top-k ranking on encrypted data in the cloud
 
 # Paillier semi-homomorphic encryption:
 
-1. 'libpaillier', C library to implement Paillier key generation,
+1. Paillier encryption scheme implemented using Python 'paillier' module.
+
+   github: https://github.com/mikeivanov/paillier
+
+2. 'libpaillier', C library to implement Paillier key generation,
    encryption, decryption and homomorphic properties of Paillier encryption
    scheme. 
+
+   github: https://github.com/tradams/alice-bob-sip/tree/master/libs/libpaillier-0.8
 
    'libpaillier' installation instructions:
 
