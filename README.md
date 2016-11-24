@@ -9,6 +9,8 @@ Top-k ranking on encrypted data in the cloud
 
    github: https://github.com/mikeivanov/paillier
 
+   'paillier' is located in 'modules'
+
 2. 'libpaillier', C library to implement Paillier key generation,
    encryption, decryption and homomorphic properties of Paillier encryption
    scheme. 
@@ -22,7 +24,7 @@ Top-k ranking on encrypted data in the cloud
       directory to install the library.
    3. Library usage is documented in paillier.h 
 
-2. 'libpaillier' uses 'GNU Multiple Precision Arithmetic Library' (GMP) to
+3. 'libpaillier' uses 'GNU Multiple Precision Arithmetic Library' (GMP) to
    perform underlying mathematial computations. So, in order to use
    libpaillier, GMP library needs to be installed first. 
 
@@ -43,13 +45,12 @@ Symmetric order preserving encryption is utilized using python
 
 URL: https://pypi.python.org/pypi/pyope/
 
-'pyope-0.0.2' directory contains the python package. 
+'pyope-0.0.2' directory in 'modules' contains the python module.
 
-Example usage:
+# NOTE: Edit the bashrc file to configure PYTHONPATH
 
-In pyope-0.0.2, 
-    
-from pyope.ope import OPE
-cipher = OPE(b'key goes here')
-ciphertext = cipher.encrypt(integer to be encrypted)
-plaintext = cipher.decrypt(ciphertext)
+Add this in your .bashrc,
+    export PYTHONPATH="${PYTHONPATH}:/home/username/Secure_Ranking/modules/paillier/:/home/username/Secure_Ranking/modules/pyope-0.0.2/"
+    export PYTHONPATH
+
+source ~/.bashrc
