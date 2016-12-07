@@ -50,7 +50,9 @@ URL: https://pypi.python.org/pypi/pyope/
 # NOTE: Edit the bashrc file to configure PYTHONPATH
 
 Add this in your .bashrc,
-    export PYTHONPATH="${PYTHONPATH}:/home/username/Secure_Ranking/modules/paillier/:/home/username/Secure_Ranking/modules/pyope-0.0.2/"
-    export PYTHONPATH
 
-source ~/.bashrc
+export PYTHONPATH="${PYTHONPATH}:/home/username/Secure_Ranking/modules/paillier/:/home/username/Secure_Ranking/modules/pyope-0.0.2/"
+
+export PYTHONPATH
+
+$ source ~/.bashrc
