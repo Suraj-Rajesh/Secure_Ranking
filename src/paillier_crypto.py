@@ -19,14 +19,15 @@ def load_keys(private_key_file, public_key_file):
 # Paillier Tests
 if __name__ == "__main__":
     # Generate Paillier keys
-    private_key, public_key = generate_keypair(128)
-    print type(private_key)
-    print type(public_key)
+#    private_key, public_key = generate_keypair(128)
     # Two random values
-    x = encrypt(public_key, 2)
-    y = encrypt(public_key, 1)
-    keygen_save(private_key, public_key)
+  #  x = encrypt(public_key, 2)
+ #   y = encrypt(public_key, 1)
+ #   keygen_save(private_key, public_key)
     (priv_key, pub_key) = load_keys("private_key.pkl", "public_key.pkl")
-    z = e_add(pub_key, x, y)
-    z_decr = decrypt(priv_key, pub_key, z)
-    print z_decr
+    x = encrypt(pub_key, 2)
+    print x
+    x_decr = decrypt(priv_key, pub_key, x)
+ #   z = e_add(pub_key, x, y)
+ #   z_decr = decrypt(priv_key, pub_key, z)
+    print x_decr
