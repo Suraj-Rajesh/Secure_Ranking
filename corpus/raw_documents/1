@@ -1,0 +1,89 @@
+Algorithm
+
+The scheme works as follows:
+Key generation
+
+    Choose two large prime numbers p and q randomly and independently of each other such that gcd ( p q , ( p − 1 ) ( q − 1 ) ) = 1 {\displaystyle \gcd(pq,(p-1)(q-1))=1} \gcd(pq,(p-1)(q-1))=1. This property is assured if both primes are of equal length.[1]
+    Compute n = p q {\displaystyle n=pq} n=pq and λ = lcm ⁡ ( p − 1 , q − 1 ) {\displaystyle \lambda =\operatorname {lcm} (p-1,q-1)} \lambda =\operatorname {lcm}(p-1,q-1).
+    Select random integer g {\displaystyle g} g where g ∈ Z n 2 ∗ {\displaystyle g\in \mathbb {Z} _{n^{2}}^{*}} g\in {\mathbb Z}_{{n^{{2}}}}^{{*}}
+    Ensure n {\displaystyle n} n divides the order of g {\displaystyle g} g by checking the existence of the following modular multiplicative inverse: μ = ( L ( g λ mod n 2 ) ) − 1 mod n {\displaystyle \mu =(L(g^{\lambda }{\bmod {n}}^{2}))^{-1}{\bmod {n}}} \mu =(L(g^{\lambda }{\bmod n}^{2}))^{{-1}}{\bmod n},
+
+    where function L {\displaystyle L} L is defined as L ( x ) = x − 1 n {\displaystyle L(x)={\frac {x-1}{n}}} {\displaystyle L(x)={\frac {x-1}{n}}} .
+
+        Note that the notation a b {\displaystyle {\frac {a}{b}}} {\frac {a}{b}} does not denote the modular multiplication of a {\displaystyle a} a times the modular multiplicative inverse of b {\displaystyle b} b but rather the quotient of a {\displaystyle a} a divided by b {\displaystyle b} b, i.e., the largest integer value v ≥ 0 {\displaystyle v\geq 0} v\geq 0 to satisfy the relation a ≥ v b {\displaystyle a\geq vb} a\geq vb.
+
+    The public (encryption) key is ( n , g ) {\displaystyle (n,g)} (n,g).
+    The private (decryption) key is ( λ , μ ) . {\displaystyle (\lambda ,\mu ).} (\lambda ,\mu ).
+
+If using p,q of equivalent length, a simpler variant of the above key generation steps would be to set g = n + 1 , λ = φ ( n ) , {\displaystyle g=n+1,\lambda =\varphi (n),} g=n+1,\lambda =\varphi (n), and μ = φ ( n ) − 1 mod n {\displaystyle \mu =\varphi (n)^{-1}{\bmod {n}}} \mu =\varphi (n)^{{-1}}{\bmod n}, where φ ( n ) = ( p − 1 ) ( q − 1 ) {\displaystyle \varphi (n)=(p-1)(q-1)} \varphi (n)=(p-1)(q-1) .[1]
+Encryption
+
+    Let m {\displaystyle m} m be a message to be encrypted where m ∈ Z n {\displaystyle m\in \mathbb {Z} _{n}} m\in {\mathbb Z}_{{n}}
+    Select random r {\displaystyle r} r where r ∈ Z n ∗ {\displaystyle r\in \mathbb {Z} _{n}^{*}} r\in {\mathbb Z}_{{n}}^{{*}}
+    Compute ciphertext as: c = g m ⋅ r n mod n 2 {\displaystyle c=g^{m}\cdot r^{n}{\bmod {n}}^{2}} c=g^{m}\cdot r^{n}{\bmod n}^{2}
+
+Decryption
+
+    Let c {\displaystyle c} c be the ciphertext to decrypt, where c ∈ Z n 2 ∗ {\displaystyle c\in \mathbb {Z} _{n^{2}}^{*}} c\in {\mathbb Z}_{{n^{{2}}}}^{{*}}
+    Compute the plaintext message as: m = L ( c λ mod n 2 ) ⋅ μ mod n {\displaystyle m=L(c^{\lambda }{\bmod {n}}^{2})\cdot \mu {\bmod {n}}} m=L(c^{\lambda }{\bmod n}^{2})\cdot \mu {\bmod n}
+
+As the original paper points out, decryption is "essentially one exponentiation modulo n 2 {\displaystyle n^{2}} n^{2}."
+Homomorphic properties
+
+A notable feature of the Paillier cryptosystem is its homomorphic properties along with its non-deterministic encryption (see Electronic voting in Applications for usage). As the encryption function is additively homomorphic, the following identities can be described:
+
+    Homomorphic addition of plaintexts
+
+    The product of two ciphertexts will decrypt to the sum of their corresponding plaintexts,
+
+        D ( E ( m 1 , r 1 ) ⋅ E ( m 2 , r 2 ) mod n 2 ) = m 1 + m 2 mod n . {\displaystyle D(E(m_{1},r_{1})\cdot E(m_{2},r_{2}){\bmod {n}}^{2})=m_{1}+m_{2}{\bmod {n}}.\,} D(E(m_{1},r_{1})\cdot E(m_{2},r_{2}){\bmod n}^{2})=m_{1}+m_{2}{\bmod n}.\,
+
+    The product of a ciphertext with a plaintext raising g will decrypt to the sum of the corresponding plaintexts,
+
+        D ( E ( m 1 , r 1 ) ⋅ g m 2 mod n 2 ) = m 1 + m 2 mod n . {\displaystyle D(E(m_{1},r_{1})\cdot g^{m_{2}}{\bmod {n}}^{2})=m_{1}+m_{2}{\bmod {n}}.\,} D(E(m_{1},r_{1})\cdot g^{{m_{2}}}{\bmod n}^{2})=m_{1}+m_{2}{\bmod n}.\,
+
+    Homomorphic multiplication of plaintexts
+
+    An encrypted plaintext raised to the power of another plaintext will decrypt to the product of the two plaintexts,
+
+        D ( E ( m 1 , r 1 ) m 2 mod n 2 ) = m 1 m 2 mod n , {\displaystyle D(E(m_{1},r_{1})^{m_{2}}{\bmod {n}}^{2})=m_{1}m_{2}{\bmod {n}},\,} D(E(m_{1},r_{1})^{{m_{2}}}{\bmod n}^{2})=m_{1}m_{2}{\bmod n},\,
+        D ( E ( m 2 , r 2 ) m 1 mod n 2 ) = m 1 m 2 mod n . {\displaystyle D(E(m_{2},r_{2})^{m_{1}}{\bmod {n}}^{2})=m_{1}m_{2}{\bmod {n}}.\,} D(E(m_{2},r_{2})^{{m_{1}}}{\bmod n}^{2})=m_{1}m_{2}{\bmod n}.\,
+
+    More generally, an encrypted plaintext raised to a constant k will decrypt to the product of the plaintext and the constant,
+
+        D ( E ( m 1 , r 1 ) k mod n 2 ) = k m 1 mod n . {\displaystyle D(E(m_{1},r_{1})^{k}{\bmod {n}}^{2})=km_{1}{\bmod {n}}.\,} D(E(m_{1},r_{1})^{k}{\bmod n}^{2})=km_{1}{\bmod n}.\,
+
+However, given the Paillier encryptions of two messages there is no known way to compute an encryption of the product of these messages without knowing the private key.
+Background
+
+Paillier cryptosystem exploits the fact that certain discrete logarithms can be computed easily.
+
+For example, by binomial theorem,
+
+        ( 1 + n ) x = ∑ k = 0 x ( x k ) n k = 1 + n x + ( x 2 ) n 2 + higher powers of  n {\displaystyle (1+n)^{x}=\sum _{k=0}^{x}{x \choose k}n^{k}=1+nx+{x \choose 2}n^{2}+{\text{higher powers of }}n} (1+n)^{x}=\sum _{{k=0}}^{x}{x \choose k}n^{k}=1+nx+{x \choose 2}n^{2}+{\text{higher powers of }}n
+
+This indicates that:
+
+        ( 1 + n ) x ≡ 1 + n x ( mod n 2 ) {\displaystyle (1+n)^{x}\equiv 1+nx{\pmod {n^{2}}}} (1+n)^{x}\equiv 1+nx{\pmod {n^{2}}}
+
+Therefore, if:
+
+        y = ( 1 + n ) x mod n 2 {\displaystyle y=(1+n)^{x}{\bmod {n}}^{2}} y=(1+n)^{x}{\bmod n}^{2}
+
+then
+
+        x ≡ y − 1 n ( mod n ) {\displaystyle x\equiv {\frac {y-1}{n}}{\pmod {n}}} x\equiv {\frac {y-1}{n}}{\pmod {n}}.
+
+Thus:
+
+        L ( ( 1 + n ) x mod n 2 ) ≡ x ( mod n ) {\displaystyle L((1+n)^{x}{\bmod {n}}^{2})\equiv x{\pmod {n}}} L((1+n)^{x}{\bmod n}^{2})\equiv x{\pmod {n}},
+
+    where function L {\displaystyle L} L is defined as L ( u ) = u − 1 n {\displaystyle L(u)={\frac {u-1}{n}}} L(u)={\frac {u-1}{n}} (quotient of integer division) and x ∈ Z n {\displaystyle x\in \mathbb {Z} _{n}} x\in {\mathbb Z}_{{n}}.
+
+Semantic security
+
+The original cryptosystem as shown above does provide semantic security against chosen-plaintext attacks (IND-CPA). The ability to successfully distinguish the challenge ciphertext essentially amounts to the ability to decide composite residuosity. The so-called decisional composite residuosity assumption (DCRA) is believed to be intractable.
+
+Because of the aforementioned homomorphic properties however, the system is malleable, and therefore does not enjoy the highest echelon of semantic security that protects against adaptive chosen-ciphertext attacks (IND-CCA2). Usually in cryptography the notion of malleability is not seen as an "advantage," but under certain applications such as secure electronic voting and threshold cryptosystems, this property may indeed be necessary.
+
+Paillier and Pointcheval however went on to propose an improved cryptosystem that incorporates the combined hashing of message m with random r. Similar in intent to the Cramer–Shoup cryptosystem, the hashing prevents an attacker, given only c, from being able to change m in a meaningful way. Through this adaptation the improved scheme can be shown to be IND-CCA2 secure in the random oracle model.

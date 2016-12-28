@@ -10,6 +10,10 @@ alphabets = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n
 stemmer = SnowballStemmer('english')
 lemmatizer = WordNetLemmatizer()
 
+# Remove unicode
+def remove_unicode(string):
+    return string.decode('unicode_escape').encode('ascii','ignore')
+
 # Process text, extract and tokenize words
 def tokenize(text):
     try:
@@ -24,7 +28,7 @@ def tokenize(text):
 def stopwords_remover(text):
     try:
         # Remove unicode from text
-        text.decode('unicode_escape').encode('ascii','ignore')
+#        text.decode('unicode_escape').encode('ascii','ignore')
         parsed_text = ' '.join([word for word in text.split() if word not in cached_stopwords])
         return parsed_text
     except Exception as details:
@@ -85,10 +89,13 @@ def prepare_documents(source_directory, destination_directory):
         files = listdir(source_directory)
         for f in files:
             raw_text = doc_to_text(source_directory + "/" + f)
-            tokenized_text = tokenize(raw_text)
+            cleaned_text = remove_unicode(raw_text)
+            tokenized_text = tokenize(cleaned_text)
             stopwords_removed_text = stopwords_remover(tokenized_text)
             processed_text = remove_alphabets(stopwords_removed_text) 
-            text_to_doc(processed_text, destination_directory + "/" + f)
+            lemmatized_text = lemmatize_text(processed_text)
+            stemmed_text = stem_text(lemmatized_text)
+            text_to_doc(stemmed_text, destination_directory + "/" + f)
     except Exception as details:
         print "Exception in: do_parser.prepare_documents()"
         print details
