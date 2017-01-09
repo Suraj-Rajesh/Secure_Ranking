@@ -10,10 +10,10 @@ def save_key(filename, key):
         pickle.dump(key, output, -1)
 
 def load_keys(private_key_file, public_key_file):
-    with open(private_key_file, "rb") as input:
-        private_key = pickle.load(input)
-    with open(public_key_file, "rb") as input:
-        public_key = pickle.load(input)
+    with open(private_key_file, "rb") as inpt:
+        private_key = pickle.load(inpt)
+    with open(public_key_file, "rb") as inpt:
+        public_key = pickle.load(inpt)
     return (private_key, public_key)
 
 # Paillier Tests
