@@ -1,5 +1,7 @@
 from multiprocessing import Pool, Manager, Value, Lock
-from collections import defaultdict
+from crypto import load_keys, load_bcrypt_salt, load_aes_key, aes_encrypt, aes_decrypt
+from paillier.paillier import *
+from bcrypt import hashpw
 from tf_idf_generator import tf, n_containing, idf, tfidf
 from textblob import TextBlob as tb
 from time import sleep
@@ -7,6 +9,7 @@ from os import listdir
 from do_parser import doc_to_text
 import cPickle as pickle
 from datetime import datetime
+import random
 
 class Counter(object):
     def __init__(self, initval=0):
@@ -23,10 +26,15 @@ class Counter(object):
 
 manager = Manager()
 index = manager.dict()
+encrypted_index = manager.dict()
 in_use_list = manager.list()
+# 0: Paillier private key, 1: Paillier public key, 2: bCrypt salt, 3: AES key
+crypto_keys = manager.list()
+base_index_for_encrypted = manager.dict()
 counter = Counter(0)
+encrypted_index_counter = Counter(0)
+masking_value = Value('i', random.randint(50, 100))
 
-#corpus = {"file1":tb("suraj rajesh darshan"), "file2":tb("darshan darshan"), "file3":tb("suraj rajesh")}
 corpus = dict()
 
 def load_documents(directory):
@@ -71,7 +79,7 @@ def load_index(index_file):
         loaded_index = pickle.load(inpt)
     return loaded_index
 
-def log_time_message(logfile, message):
+def log_message(logfile, message):
     start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     to_log = message + start_time + "\n"
     log_file = open(logfile, "a")
@@ -81,14 +89,66 @@ def log_time_message(logfile, message):
 def generate_plain_index_driver(no_of_processes = 10):
     global corpus
     global index
-    log_time_message("../logs/index_log", "Loading documents started at: ")
+    log_message("../logs/index_log", "Loading documents started at: ")
     load_documents("../corpus/prepared_documents")
-    log_time_message("../logs/index_log", "Loading documents done, Indexing started at: ")
+    log_message("../logs/index_log", "Loading documents done, Indexing started at: ")
     pool = Pool(processes = no_of_processes)
     pool.map(indexer, corpus)
-    save_index("../index/test_plain_index.pkl", index) 
-    log_time_message("../logs/index_log", "Indexing ended at: ")
+    save_index("../index/plain_index.pkl", index) 
+    log_message("../logs/index_log", "Indexing ended at: ")
+
+# Encrypted index generation functions
+
+def encrypted_indexer(keyword):
+    global encrypted_index_counter
+    global encrypted_index
+    global masking_value
+    global base_index_for_encrypted
+    global crypto_keys
+    global encrypted_index_counter
+
+    encrypted_index_counter.increment()
+    print "Processing " + str(encrypted_index_counter.value()) + " of " + str(len(base_index_for_encrypted)) + "..."
+
+    encrypted_metadata = dict()
+
+    for filename, tf_idf in base_index_for_encrypted[keyword].iteritems():
+        encrypted_metadata.update({aes_encrypt(filename, crypto_keys[3]):encrypt(crypto_keys[1], int(tf_idf * 100000) + masking_value.value)})
+    encrypted_index[hashpw(keyword.encode('utf-8'), crypto_keys[2])] = encrypted_metadata
+
+def generate_encrypted_index_driver(no_of_processes = 10):
+    global crypto_keys
+    global base_index_for_encrypted
+
+    plain_index = load_index("../index/plain_index.pkl")
+    base_index_for_encrypted = plain_index
+
+    (paillier_private_key, paillier_public_key) = load_keys("../keys/private_key.pkl", "../keys/public_key.pkl")
+    bcrypt_salt = load_bcrypt_salt("../keys/bcrypt_salt.pkl")
+    aes_key = load_aes_key("../keys/aes_key.pkl")
+
+    crypto_keys.append(paillier_private_key)
+    crypto_keys.append(paillier_public_key)
+    crypto_keys.append(bcrypt_salt)
+    crypto_keys.append(aes_key)
+
+    pool = Pool(processes = no_of_processes)
+    pool.map(encrypted_indexer, plain_index)
+
+    save_index("../index/encrypted_index.pkl", encrypted_index)
 
 def test_index():
     loaded_index = load_index("../index/test_plain_index.pkl")
     print loaded_index
+
+def test_encryption_module():
+    crypto_keys = list()
+    (paillier_private_key, paillier_public_key) = load_keys("../keys/private_key.pkl", "../keys/public_key.pkl")
+    crypto_keys.append(paillier_private_key)
+    crypto_keys.append(paillier_public_key)
+    encr = encrypt(crypto_keys[1], 100)
+    print encr
+
+def test_encrypted_index():
+    encrypted_index = load_index("../index/encrypted_index.pkl")
+    print encrypted_index

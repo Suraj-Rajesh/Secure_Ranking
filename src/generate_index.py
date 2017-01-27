@@ -4,7 +4,7 @@ from textblob import TextBlob as tb
 import cPickle as pickle
 from tf_idf_generator import tf, n_containing, idf, tfidf
 from paillier.paillier import *
-from paillier_crypto import load_keys
+from crypto import load_keys
 from datetime import datetime
 import random
 

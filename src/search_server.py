@@ -11,7 +11,7 @@ if __name__ == "__main__":
         while True:
             query = raw_input("Search: ")
             stemmed_query = stem_text(query)
-            query_terms = stemmed_query.split()
+            query_terms = list(set(stemmed_query.split()))
             sort_index = dict()
 
             for keyword in query_terms:
