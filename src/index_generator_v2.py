@@ -132,10 +132,13 @@ def generate_encrypted_index_driver(no_of_processes = 10):
     crypto_keys.append(bcrypt_salt)
     crypto_keys.append(aes_key)
 
+    log_message("../logs/index_log", "\nEncrypting index started at: ")
     pool = Pool(processes = no_of_processes)
     pool.map(encrypted_indexer, plain_index)
 
     save_index("../index/encrypted_index.pkl", encrypted_index)
+
+    log_message("../logs/index_log", "\nEncrypting index ended at: ")
 
 def test_index():
     loaded_index = load_index("../index/test_plain_index.pkl")

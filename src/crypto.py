@@ -67,6 +67,21 @@ def load_bcrypt_salt(saved_path):
     with open(saved_path, "rb") as inpt:
         return pickle.load(inpt)
 
+def convert_paillier_keys_to_secret(private_key, public_key):
+    return str(private_key.l) + " " + str(private_key.m) + " " + str(public_key.n)
+
+def recover_paillier_keys_from_secret(secret):
+    (private_key, public_key) = generate_keypair(16)
+    secret_processed = [int(key_source) for key_source in secret.split()]
+    private_key.l = secret_processed[0]
+    private_key.m = secret_processed[1]
+    public_key.n = secret_processed[2]
+    public_key.n_sq = public_key.n * public_key.n
+    public_key.g = public_key.n + 1
+    return (private_key, public_key)
+
+# Shamir's secret sharing algorithm
+
 # Paillier Tests
 if __name__ == "__main__":
     # Generate Paillier keys
