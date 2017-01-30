@@ -79,8 +79,9 @@ class Encrypted_Search_Server(object):
         ranked_result = [result[0] for result in ranked_result]
 
         # Get top-k results
-        if top_k == 0 and len(ranked_result) > 170:
-            ranked_result = ranked_result[:170]
+        if top_k == 0:
+            if len(ranked_result) > 170:
+                ranked_result = ranked_result[:170]
         else:
             ranked_result = ranked_result[:top_k]
 
