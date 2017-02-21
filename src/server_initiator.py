@@ -19,6 +19,8 @@ if __name__ == "__main__":
 
     # Send it on port 5001(server initiation port)
     send_object(sock, key_shard_1)
+    # FIX: For invalid and under constructed pickle
+    # Time delay allows enough time to pickle the new object cleanly
     time.sleep(1)
     send_object(sock, key_shard_2)
 
