@@ -9,3 +9,8 @@ class Server_Response(object):
     def __init__(self, time_to_process, ranked_list = []):
         self.ranked_list = ranked_list
         self.time_to_process = time_to_process
+
+class KeyShard(object):
+
+    def __init__(self, key_shard):
+        self.key_shard = key_shard

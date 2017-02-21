@@ -2,25 +2,29 @@ from generate_index import load_index
 from bcrypt import hashpw
 from do_parser import stem_text
 import operator
-from crypto import load_keys, load_bcrypt_salt, load_aes_key, aes_decrypt
+from crypto import load_keys, load_bcrypt_salt, load_aes_key, aes_decrypt, load_key, recover_paillier_keys_from_secret
 from network_interface import send_object, receive_object
 from communication_objects import Server_Response
 import threading
 import socket
 from paillier.paillier import e_add, decrypt
+from adi_shamir_secret_sharing import recover_secret
 from time import time
+import pdb
 
 class Encrypted_Search_Server(object):
 
-    def __init__(self, port = 5000, is_cached = False):
+    def __init__(self, port = 5000, initiation_port = 5001, is_cached = False):
         self.port = port
+        self.initiation_port = initiation_port
         self.cached = is_cached
 
         # Load keys
         self.aes_key = load_aes_key("../keys/aes_key.pkl")
         self.bcryt_salt = load_bcrypt_salt("../keys/bcrypt_salt.pkl")
         # 0: Private key, 1: Public key
-        self.paillier_keys = load_keys("../keys/private_key.pkl", "../keys/public_key.pkl")
+    #    self.paillier_keys = load_keys("../keys/private_key.pkl", "../keys/public_key.pkl")
+        self.paillier_keys = None
 
         # Load encrypted search index
         self.index = load_index("../index/encrypted_index.pkl")
@@ -30,8 +34,33 @@ class Encrypted_Search_Server(object):
         self.serverSock.bind(("0.0.0.0", self.port))
         self.serverSock.listen(128)
 
+    def initiate(self):
+        # Load first shard from disk
+        shard_0 = load_key("../keys/shard_0.pkl")
+        key_shard_list = [shard_0]
+
+        initiation_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        initiation_socket.bind(("0.0.0.0", self.initiation_port))
+        initiation_socket.listen(5)
+
+        print "\nServer awaiting key initialization..."
+        connection, address = initiation_socket.accept()
+
+        # Receiving twice, as key shards are larger than 8k causing serialization(pickling) issues over the network
+        key_shard_1 = receive_object(connection)
+        key_shard_list.append(key_shard_1.key_shard)
+        key_shard_2 = receive_object(connection)
+        key_shard_list.append(key_shard_2.key_shard)
+
+        initiation_socket.close()
+
+        # Generate Paillier keys
+        secret = recover_secret(key_shard_list)
+        self.paillier_keys = recover_paillier_keys_from_secret(secret)
+    
     def start(self):
         # Start listening for incoming requests
+        print "\nServer ready...\n"
         while True:
             connection, address = self.serverSock.accept()
             threading.Thread(target=self.requestHandler, args=(connection, address)).start()
@@ -100,7 +129,9 @@ class Encrypted_Search_Server(object):
 if __name__ == "__main__":
     # Start the server
     try:
-        encrypted_search_server = Encrypted_Search_Server()
+        encrypted_search_server = Encrypted_Search_Server(port = 5000, initiation_port = 5001)
+        encrypted_search_server.initiate()
         encrypted_search_server.start()
     except KeyboardInterrupt:
+        encrypted_search_server.serverSock.close()
         print "Server shutting down...\n"
