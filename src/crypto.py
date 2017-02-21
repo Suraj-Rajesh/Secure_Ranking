@@ -36,6 +36,10 @@ def load_aes_key(saved_path):
     with open(saved_path, "rb") as inpt:
         return pickle.load(inpt)
 
+def load_key(saved_path):
+    with open(saved_path, "rb") as inpt:
+        return pickle.load(inpt)
+
 def generate_paillier_keys():
     key_size = int(raw_input("Key Size: "))
     save_directory = raw_input("Directory to save the keys(relative or absolute): ")

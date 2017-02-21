@@ -45,3 +45,6 @@ for i, blob in enumerate(bloblist):
     sorted_words = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     for word, score in sorted_words[:3]:
         print("Word: {}, TF-IDF: {}".format(word, round(score, 5)))
+
+a = idf("python", bloblist)
+print a

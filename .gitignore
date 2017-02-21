@@ -1,0 +1,6 @@
+index
+keys
+*.pyc
+src/*.pyc
+document_corpus
+logs
