@@ -41,7 +41,7 @@ def load_key(saved_path):
         return pickle.load(inpt)
 
 def generate_paillier_keys():
-    key_size = int(raw_input("Key Size: "))
+    key_size = int(raw_input("Paillier Key Size: "))
     save_directory = raw_input("Directory to save the keys(relative or absolute): ")
     if save_directory[-1] != '/':
         save_directory = save_directory + "/"

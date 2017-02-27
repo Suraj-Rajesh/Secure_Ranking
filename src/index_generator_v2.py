@@ -1,7 +1,6 @@
 from multiprocessing import Pool, Manager, Value, Lock
-from crypto import load_keys, load_bcrypt_salt, load_aes_key, aes_encrypt, aes_decrypt
+from crypto import load_keys, load_bcrypt_salt, load_aes_key, aes_encrypt, aes_decrypt, generate_aes_key, generate_paillier_keys
 from paillier.paillier import *
-from bcrypt import hashpw
 from tf_idf_generator import tf, n_containing, idf, tfidf
 from textblob import TextBlob as tb
 from time import sleep
@@ -10,6 +9,8 @@ from do_parser import doc_to_text
 import cPickle as pickle
 from datetime import datetime
 import random
+from uuid import uuid4
+from hashlib import sha256
 
 class Counter(object):
     def __init__(self, initval=0):
@@ -74,6 +75,10 @@ def save_index(filename, index):
     with open(filename, "wb") as output:
         pickle.dump(dict(index), output, -1)
 
+def save_object(filename, obj):
+    with open(filename, "wb") as output:
+        pickle.dump(obj, output, -1)
+
 def load_index(index_file):
     with open(index_file, "rb") as inpt:
         loaded_index = pickle.load(inpt)
@@ -90,7 +95,7 @@ def generate_plain_index_driver(no_of_processes = 10):
     global corpus
     global index
     log_message("../logs/index_log", "Loading documents started at: ")
-    load_documents("../corpus/prepared_documents")
+    load_documents("../document_corpus/prepared_documents")
     log_message("../logs/index_log", "Loading documents done, Indexing started at: ")
     pool = Pool(processes = no_of_processes)
     pool.map(indexer, corpus)
@@ -114,7 +119,16 @@ def encrypted_indexer(keyword):
 
     for filename, tf_idf in base_index_for_encrypted[keyword].iteritems():
         encrypted_metadata.update({aes_encrypt(filename, crypto_keys[3]):encrypt(crypto_keys[1], int(tf_idf * 100000) + masking_value.value)})
-    encrypted_index[hashpw(keyword.encode('utf-8'), crypto_keys[2])] = encrypted_metadata
+    encrypted_index[sha256(crypto_keys[2].encode() + keyword.encode()).hexdigest()] = encrypted_metadata
+
+def generate_keys(key_directory):
+    # Both creates keys and saves it in respective directory
+    generate_aes_key()
+    generate_paillier_keys()
+
+    # SHA256 salt
+    salt = uuid4().hex
+    save_object(key_directory + "/salt.pkl", salt)
 
 def generate_encrypted_index_driver(no_of_processes = 10):
     global crypto_keys
@@ -122,14 +136,16 @@ def generate_encrypted_index_driver(no_of_processes = 10):
 
     plain_index = load_index("../index/plain_index.pkl")
     base_index_for_encrypted = plain_index
+    
+    generate_keys("../keys")
 
     (paillier_private_key, paillier_public_key) = load_keys("../keys/private_key.pkl", "../keys/public_key.pkl")
-    bcrypt_salt = load_bcrypt_salt("../keys/bcrypt_salt.pkl")
+    salt = load_index("../keys/salt.pkl")
     aes_key = load_aes_key("../keys/aes_key.pkl")
 
     crypto_keys.append(paillier_private_key)
     crypto_keys.append(paillier_public_key)
-    crypto_keys.append(bcrypt_salt)
+    crypto_keys.append(salt)
     crypto_keys.append(aes_key)
 
     log_message("../logs/index_log", "\nEncrypting index started at: ")

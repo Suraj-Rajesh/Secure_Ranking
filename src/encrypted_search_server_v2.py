@@ -1,5 +1,4 @@
 from generate_index import load_index
-from bcrypt import hashpw
 from do_parser import stem_text
 import operator
 from crypto import load_keys, load_bcrypt_salt, load_aes_key, aes_decrypt, load_key, recover_paillier_keys_from_secret
@@ -10,6 +9,7 @@ import socket
 from paillier.paillier import e_add, decrypt
 from adi_shamir_secret_sharing import recover_secret
 from time import time
+from hashlib import sha256
 import pdb
 
 class Encrypted_Search_Server(object):
@@ -21,7 +21,7 @@ class Encrypted_Search_Server(object):
 
         # Load keys
         self.aes_key = load_aes_key("../keys/aes_key.pkl")
-        self.bcryt_salt = load_bcrypt_salt("../keys/bcrypt_salt.pkl")
+        self.salt = load_bcrypt_salt("../keys/salt.pkl")
         # 0: Private key, 1: Public key
     #    self.paillier_keys = load_keys("../keys/private_key.pkl", "../keys/public_key.pkl")
         self.paillier_keys = None
@@ -81,7 +81,7 @@ class Encrypted_Search_Server(object):
         # Prepare the hashed query
         stemmed_query = stem_text(query)
         query_terms = list(set(stemmed_query.split()))
-        hashed_query_terms = [hashpw(query.encode('utf-8'), self.bcryt_salt) for query in query_terms]
+        hashed_query_terms = [sha256(self.salt.encode() + query.encode()).hexdigest() for query in query_terms]
 
         # Ranked result will be stored here
         sort_index = dict()
