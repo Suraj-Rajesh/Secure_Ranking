@@ -1,3 +1,0 @@
-include README.rst
-include tests/test_*.py
-exclude *.pyc, *.pyo

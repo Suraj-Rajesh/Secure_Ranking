@@ -79,13 +79,17 @@ class Encrypted_Search_Server(object):
         top_k = client_query_object.top_k
 
         # Prepare the hashed query
+        time_1 = time()
         stemmed_query = stem_text(query)
         query_terms = list(set(stemmed_query.split()))
         hashed_query_terms = [sha256(self.salt.encode() + query.encode()).hexdigest() for query in query_terms]
+        time_2 = time()
+        print "Query hashing: " + "{0:.4f}".format(time_2 - time_1)
 
         # Ranked result will be stored here
         sort_index = dict()
 
+        time_1 = time()
         # Main logic for fetching ranked result from encrypted index goes here
         for keyword in hashed_query_terms:
             if keyword in self.index:
@@ -98,7 +102,10 @@ class Encrypted_Search_Server(object):
                         sort_index[filename] = e_add(self.paillier_keys[1], sort_index[filename], value)
                     else:
                         sort_index[filename] = value
+        time_2 = time()
+        print "Search & Paillier add: " + "{0:.4f}".format(time_2 - time_1)
 
+        time_1 = time()
         # Decrypt the sort index
         for filename, value in sort_index.iteritems():
             sort_index[filename] = decrypt(self.paillier_keys[0], self.paillier_keys[1], value)
@@ -106,6 +113,8 @@ class Encrypted_Search_Server(object):
         # Sort the final sort_index
         ranked_result = sorted(sort_index.items(), key=operator.itemgetter(1), reverse=True)
         ranked_result = [result[0] for result in ranked_result]
+        time_2 = time()
+        print "Decrypt & Sort: " + "{0:.4f}".format(time_2 - time_1)
 
         # Get top-k results
         if top_k == 0:
